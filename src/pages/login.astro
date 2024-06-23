@@ -1,0 +1,68 @@
+---
+import { SITE } from "../consts";
+import Header from '../components/Header.astro';
+import "../styles/global.css";
+import "../styles/login.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - {SITE.TITLE}</title>
+</head>
+<body class="bg-white">
+<Header />
+<main class="flex items-center justify-center min-h-screen bg-white">
+    <div class="login-container">
+        <h2 class="login-title">Login</h2>
+        <form method="POST" action="/api/login" onsubmit="return validateForm()">
+            <div class="login-field">
+                <label class="login-label" for="username">Username</label>
+                <input type="text" id="username" name="username" class="login-input" required />
+            </div>
+            <div class="login-field relative">
+                <label class="login-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="login-input bg-blur" required />
+                <span class="password-toggle" onclick="togglePasswordVisibility()">
+                    <i id="password-icon" class="fas fa-eye"></i>
+                </span>
+            </div>
+            <div class="login-actions">
+                <button type="submit" class="login-button">Login</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    function validateForm() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const regex = /^[a-zA-Z0-9_]+$/; // Simple regex for alphanumeric and underscore
+
+        if (!regex.test(username) || !regex.test(password)) {
+            alert('Invalid input detected. Only alphanumeric characters are allowed.');
+            return false;
+        }
+        return true;
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const passwordIcon = document.getElementById('password-icon');
+        const isPasswordVisible = passwordInput.type === 'text';
+        passwordInput.type = isPasswordVisible ? 'password' : 'text';
+        passwordIcon.classList.toggle('fa-eye', isPasswordVisible);
+        passwordIcon.classList.toggle('fa-eye-slash', !isPasswordVisible);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.validateForm = validateForm;
+        window.togglePasswordVisibility = togglePasswordVisibility;
+    });
+</script>
+</body>
+</html>

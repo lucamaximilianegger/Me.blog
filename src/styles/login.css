@@ -1,0 +1,36 @@
+/* Login Page Specific Styles */
+.login-container {
+    @apply w-full max-w-md p-6 bg-white rounded-md shadow-md border border-gray-300;
+}
+
+.login-title {
+    @apply mb-6 text-2xl font-semibold text-center text-black;
+}
+
+.login-field {
+    @apply mb-4 relative;
+}
+
+.login-label {
+    @apply block mb-2 text-sm font-bold text-black;
+}
+
+.login-input {
+    @apply w-full px-3 py-2 leading-tight text-black border rounded shadow appearance-none focus:outline-none focus:ring-2 focus:ring-lightOlive focus:border-transparent;
+    background-color: rgba(255, 255, 255, 0.75); /* Light transparent background */
+}
+
+.password-toggle {
+    @apply absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer;
+    right: 0.45rem;
+    height: 143%; /* Full height of the input field */
+    padding: 0 0.5rem;
+}
+
+.login-actions {
+    @apply flex items-center justify-between;
+}
+
+.login-button {
+    @apply px-4 py-2 font-bold text-white bg-darkOlive rounded hover:bg-lightOlive focus:outline-none focus:ring-2 focus:ring-lightOlive focus:ring-offset-2;
+}

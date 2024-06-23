@@ -1,0 +1,7 @@
+---
+const { size = "md" } = Astro.props; // Standardgröße des Containers
+---
+
+<div class={`container ${size === "md" ? "max-w-screen-md" : size === "lg" ? "max-w-screen-lg" : "max-w-full"} mx-auto px-4`}>
+    <slot />
+</div>
