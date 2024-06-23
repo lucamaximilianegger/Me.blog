@@ -3,6 +3,7 @@ import { SITE, LINKS } from "../consts";
 import { cn } from "../lib/utils";
 const { pathname } = Astro.url;
 const subpath = pathname.match(/[^/]+/g);
+import Container from "./Container.astro";
 import "../styles/global.css";
 import "../styles/header.css";
 ---
@@ -12,7 +13,7 @@ import "../styles/header.css";
     <div class="header-logo">
       <a href="/" class="header-logo-link">
         <svg class="size-6 fill-current">
-          <use href="../../public/brand.svg"></use>
+          <use href="brand.svg#brand"></use>
         </svg>
         <div class="header-logo-text">
           {SITE.TITLE}
