@@ -4,7 +4,13 @@ export default {
     './src/**/*.{astro,html,js,jsx,ts,tsx,vue,svelte}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        transparentWhite: 'rgba(255, 255, 255, 0.8)',
+        lightOlive: '#819a6f',
+        darkOlive: '#31452a',
+      },
+    },
   },
   plugins: [],
 }
