@@ -62,10 +62,14 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
 // Import routes
 const authRoutes = require('./routes/auth.routes'); // Import authentication routes
 const userRoutes = require('./routes/user.routes'); // Import user routes
+const blogRoutes = require('./routes/blog.routes'); // Import blog routes
+const tagRoutes = require('./routes/tag.routes'); // Import tag routes
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/tags', tagRoutes); // Add tag routes
 
 // Basic route for testing
 app.get('/', (req, res) => {
