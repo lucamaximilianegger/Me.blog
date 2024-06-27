@@ -1,6 +1,30 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const ActivitySchema = new mongoose.Schema({
+    action: {
+        type: String,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+const ReviewHistorySchema = new mongoose.Schema({
+    blogId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Blog',
+    },
+    comments: [{
+        type: String,
+    }],
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -28,7 +52,7 @@ const UserSchema = new mongoose.Schema({
         default: ['Reader'],
     },
     profileImage: {
-        type: String, // URL to the profile image
+        type: String, // URL oder Base64-String
     },
     emailVerificationToken: {
         type: String,
@@ -47,6 +71,24 @@ const UserSchema = new mongoose.Schema({
     deletionDate: {
         type: Date,
     },
+    notificationSettings: {
+        email: {
+            type: Boolean,
+            default: true,
+        },
+        sms: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    activityLog: {
+        enabled: {
+            type: Boolean,
+            default: true,
+        },
+        activities: [ActivitySchema],
+    },
+    reviewHistory: [ReviewHistorySchema],
     date: {
         type: Date,
         default: Date.now,
