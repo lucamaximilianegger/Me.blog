@@ -18,14 +18,14 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 <main class="flex items-center justify-center min-h-screen bg-white">
     <div class="login-container">
         <h2 class="login-title">Login</h2>
-        <form method="POST" action="/api/login" onsubmit="return validateForm()">
+        <form id="login-form">
             <div class="login-field">
                 <label class="login-label" for="username">Username</label>
                 <input type="text" id="username" name="username" class="login-input" required />
             </div>
             <div class="login-field relative">
                 <label class="login-label" for="password">Password</label>
-                <input type="password" id="password" name="password" class="login-input bg-blur" required />
+                <input type="password" id="password" name="password" class="login-input" required />
                 <span class="password-toggle" onclick="togglePasswordVisibility()">
                     <i id="password-icon" class="fas fa-eye"></i>
                 </span>
@@ -34,6 +34,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
                 <button type="submit" class="login-button">Login</button>
             </div>
         </form>
+        <p id="error-message" class="text-red-500"></p>
     </div>
 </main>
 
@@ -41,10 +42,10 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
     function validateForm() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const regex = /^[a-zA-Z0-9_]+$/; // Simple regex for alphanumeric and underscore
 
-        if (!regex.test(username) || !regex.test(password)) {
-            alert('Invalid input detected. Only alphanumeric characters are allowed.');
+        // Allow all characters for passwords
+        if (username.trim() === '' || password.trim() === '') {
+            alert('Username and password cannot be empty.');
             return false;
         }
         return true;
@@ -62,6 +63,34 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
     document.addEventListener('DOMContentLoaded', () => {
         window.validateForm = validateForm;
         window.togglePasswordVisibility = togglePasswordVisibility;
+
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (validateForm()) {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    const response = await fetch('http://localhost:3001/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password }),
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert('Login successful');
+                    } else {
+                        document.getElementById('error-message').innerText = data.message;
+                    }
+                } catch (error) {
+                    document.getElementById('error-message').innerText = 'An error occurred';
+                }
+            }
+        });
     });
 </script>
 </body>
