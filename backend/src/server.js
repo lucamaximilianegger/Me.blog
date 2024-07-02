@@ -1,39 +1,41 @@
 const express = require('express');
-const connectDB = require('./config/db'); // Import the MongoDB connection function
-const dotenv = require('dotenv'); // Import dotenv for environment variables
-const bodyParser = require('body-parser'); // Import body-parser to parse request bodies
-const cors = require('cors'); // Import cors for cross-origin resource sharing
-const helmet = require('helmet'); // Import helmet for setting various HTTP headers for security
-const rateLimit = require('express-rate-limit'); // Import express-rate-limit for rate limiting
+const connectDB = require('./config/db');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const scheduleAccountDeletion = require('./utils/scheduler'); // Import the scheduler
-const csurf = require('csurf'); // Import csurf for CSRF protection
-const cookieParser = require('cookie-parser'); // Import cookie-parser
+const scheduleAccountDeletion = require('./utils/scheduler');
+const csurf = require('csurf');
+const cookieParser = require('cookie-parser');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
-// Initialize the express app
+// Initialize express app
 const app = express();
 
 // Connect to MongoDB
-connectDB(); // Call the function to connect to MongoDB
+connectDB();
 
-// Use middleware
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(helmet());
 
-// Rate limiting middleware
+// Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: 'Too many requests from this IP, please try again later.'
 });
-app.use(limiter); // Apply the rate limiting middleware to all requests
+app.use(limiter);
 
-// Configure sessions
+// Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -42,7 +44,7 @@ app.use(session({
         mongoUrl: process.env.MONGO_URI,
     }),
     cookie: {
-        maxAge: 1000 * 60 * 60, // 1 hour
+        maxAge: 1000 * 60 * 60,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict'
@@ -51,25 +53,50 @@ app.use(session({
 
 app.use(cookieParser());
 
-// CSRF protection middleware
+// CSRF protection
 const csrfProtection = csurf({ cookie: true });
 
-// Endpoint to get CSRF token
+// Swagger-Definition
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'My Dream Blog API',
+            version: '1.0.0',
+            description: 'API für My Dream Blog mit Blogs und öffentlichen Kommentaren',
+        },
+        servers: [
+            {
+                url: `http://localhost:${process.env.PORT || 5002}`,
+                description: 'Entwicklungsserver',
+            },
+        ],
+    },
+    apis: ['./src/routes/*.js'], // Stellen Sie sicher, dass dieser Pfad korrekt ist
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// CSRF token endpoint
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
 // Import routes
-const authRoutes = require('./routes/auth.routes'); // Import authentication routes
-const userRoutes = require('./routes/user.routes'); // Import user routes
-const blogRoutes = require('./routes/blog.routes'); // Import blog routes
-const tagRoutes = require('./routes/tag.routes'); // Import tag routes
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const blogRoutes = require('./routes/blog.routes');
+const publicCommentRoutes = require('./routes/publicComment.routes');
+const tagRoutes = require('./routes/tag.routes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/blogs', blogRoutes);
-app.use('/api/tags', tagRoutes); // Add tag routes
+app.use('/api/public-comments', publicCommentRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {
@@ -85,10 +112,8 @@ app.use((err, req, res, next) => {
 // Start the scheduler
 scheduleAccountDeletion();
 
-// Define the port to run the server on
-const PORT = process.env.PORT || 5002;
-
 // Start the server
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

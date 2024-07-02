@@ -1,36 +1,176 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit'); // Import rateLimit
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { registerUser, confirmEmail, loginUser, refreshToken, confirmAccountDeletion, requestAccountDeletion, cancelAccountDeletion } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 const csrfProtection = require('csurf')({ cookie: true });
 
-// Rate limit middleware
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 login requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 5,
     message: 'Too many login attempts from this IP, please try again later.'
 });
 
-// Route to register a new user
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registriert einen neuen Benutzer
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Benutzer erfolgreich registriert
+ *       400:
+ *         description: Ungültige Eingabedaten
+ */
 router.post('/register', registerUser);
 
-// Route to confirm user email
+/**
+ * @swagger
+ * /api/auth/email-confirmation/{token}:
+ *   get:
+ *     summary: Bestätigt die E-Mail-Adresse eines Benutzers
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: E-Mail erfolgreich bestätigt
+ *       400:
+ *         description: Ungültiger oder abgelaufener Token
+ */
 router.get('/email-confirmation/:token', confirmEmail);
 
-// Route to authenticate user and get token
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Authentifiziert einen Benutzer
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Erfolgreich eingeloggt
+ *       401:
+ *         description: Authentifizierung fehlgeschlagen
+ *       429:
+ *         description: Zu viele Anmeldeversuche
+ */
 router.post('/login', loginLimiter, loginUser);
 
-// Route to refresh JWT token
+/**
+ * @swagger
+ * /api/auth/token/refresh:
+ *   post:
+ *     summary: Erneuert den Zugriffstoken
+ *     tags: [Authentication]
+ *     security:
+ *       - csrfToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Neuer Zugriffstoken generiert
+ *       401:
+ *         description: Ungültiger Refresh-Token
+ */
 router.post('/token/refresh', csrfProtection, refreshToken);
 
-// Route to request account deletion
+/**
+ * @swagger
+ * /api/auth/account-deletion/request:
+ *   post:
+ *     summary: Beantragt die Löschung des Benutzerkontos
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *       - csrfToken: []
+ *     responses:
+ *       200:
+ *         description: Kontolöschung beantragt
+ *       401:
+ *         description: Nicht autorisiert
+ */
 router.post('/account-deletion/request', protect, csrfProtection, requestAccountDeletion);
 
-// Route to confirm account deletion
+/**
+ * @swagger
+ * /api/auth/account-deletion/confirm/{token}:
+ *   get:
+ *     summary: Bestätigt die Löschung des Benutzerkontos
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Kontolöschung bestätigt
+ *       400:
+ *         description: Ungültiger oder abgelaufener Token
+ */
 router.get('/account-deletion/confirm/:token', confirmAccountDeletion);
 
-// Route to cancel account deletion
+/**
+ * @swagger
+ * /api/auth/account-deletion/cancel:
+ *   post:
+ *     summary: Bricht die Löschung des Benutzerkontos ab
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *       - csrfToken: []
+ *     responses:
+ *       200:
+ *         description: Kontolöschung abgebrochen
+ *       401:
+ *         description: Nicht autorisiert
+ */
 router.post('/account-deletion/cancel', protect, csrfProtection, cancelAccountDeletion);
 
 module.exports = router;

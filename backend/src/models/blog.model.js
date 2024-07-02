@@ -8,8 +8,8 @@ const calculateReadTime = (content) => {
     return `${minutes} min read`;
 };
 
-// Schema für Kommentare
-const CommentSchema = new mongoose.Schema({
+// Existing ReviewComment schema (for the review process)
+const ReviewCommentSchema = new mongoose.Schema({
     reviewer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -20,7 +20,7 @@ const CommentSchema = new mongoose.Schema({
         required: true,
     },
     section: {
-        type: String, // Speichert Informationen über den spezifischen Abschnitt (z.B. ID oder Absatznummer)
+        type: String,
         required: true,
     },
     createdAt: {
@@ -29,7 +29,6 @@ const CommentSchema = new mongoose.Schema({
     },
 });
 
-// Schema für Blogs
 const BlogSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -48,7 +47,7 @@ const BlogSchema = new mongoose.Schema({
         type: String,
     },
     images: {
-        type: [String], // Array von Strings zur Unterstützung mehrerer Bilder
+        type: [String],
     },
     tags: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -64,21 +63,26 @@ const BlogSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
-        comments: [CommentSchema], // Array von Kommentaren
+        comments: [ReviewCommentSchema],
         isReviewed: {
             type: Boolean,
             default: false,
         },
     },
-    createdAt: {
-        type: Date,
-        default: Date.now,
+    publicComments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PublicComment'
+    }],
+    publicCommentsEnabled: {
+        type: Boolean,
+        default: true
     },
     updatedAt: {
         type: Date,
         default: Date.now,
     },
 });
+
 
 // Middleware zur Berechnung der Lesezeit vor dem Speichern
 BlogSchema.pre('save', function (next) {
